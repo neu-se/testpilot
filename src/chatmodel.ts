@@ -9,7 +9,7 @@ import * as handlebars from "handlebars";
 const defaultPostOptions = {
   max_tokens: 500, // maximum number of tokens to return
   temperature: 0, // sampling temperature; higher values increase diversity
-  n: 5, // number of completions to return
+  // n: 5, // number of completions to return
   top_p: 1, // no need to change this
 };
 export type PostOptions = Partial<typeof defaultPostOptions>;
@@ -64,20 +64,12 @@ export class ChatModel implements ICompletionModel {
 
     performance.mark("codex-query-start");
 
-    const postOptions =   
-        {
-          prompt,
-          ...options,
-        };
-
     const templateFileName = this.template;
     const templateFile = fs.readFileSync(templateFileName, 'utf8');
     const compiledTemplate = handlebars.compile(templateFile);
-    const newPrompt = compiledTemplate({ code: prompt });
 
-    const newOptions = {
+    const postOptions = {
       model: "llama-3-70b-instruct",
-      max_tokens: 500,
       messages: [
         {
           role: "system",
@@ -85,14 +77,14 @@ export class ChatModel implements ICompletionModel {
         },
         {
           role: "user",
-          content: newPrompt
+          content: compiledTemplate({ code: prompt })
         }
-      ]
+      ],
+      ...options
     };
 
 
-    // const res = await axios.post(this.apiEndpoint, postOptions, { headers });
-    const res = await axios.post(this.apiEndpoint, newOptions, { headers });
+    const res = await axios.post(this.apiEndpoint, postOptions, { headers });
 
     const completions = new Set<string>();
     const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
@@ -170,7 +162,7 @@ if (require.main === module) {
   (async () => {
     const codex = new ChatModel('./template/template0.hb');
     const prompt = fs.readFileSync(0, "utf8");
-    const responses = await codex.query(prompt, { n: 1 });
+    const responses = await codex.query(prompt);
     console.log([...responses][0]);
   })().catch((err) => {
     console.error(err);
