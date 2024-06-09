@@ -94,8 +94,8 @@ export class ChatModel implements ICompletionModel {
     const newHeaders =  {
       headers: {
         accept: "application/json",
-        authorization: "Bearer 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",
-        "content-type": "application/json"
+        "content-type": "application/json",
+        ...JSON.parse(this.authHeaders)
       }
     };
 
