@@ -7,7 +7,7 @@ import * as handlebars from "handlebars";
 
 
 const defaultPostOptions = {
-  max_tokens: 100, // maximum number of tokens to return
+  max_tokens: 500, // maximum number of tokens to return
   temperature: 0, // sampling temperature; higher values increase diversity
   n: 5, // number of completions to return
   top_p: 1, // no need to change this
@@ -28,6 +28,7 @@ export class ChatModel implements ICompletionModel {
   private readonly authHeaders: string;
 
   constructor(
+    private readonly template: string,
     private readonly instanceOptions: PostOptions = {}
   ) {
     this.apiEndpoint = getEnv("TESTPILOT_LLM_API_ENDPOINT");
@@ -69,7 +70,7 @@ export class ChatModel implements ICompletionModel {
           ...options,
         };
 
-    const templateFileName = './templates/template1.hb';
+    const templateFileName = this.template;
     const templateFile = fs.readFileSync(templateFileName, 'utf8');
     const compiledTemplate = handlebars.compile(templateFile);
     const newPrompt = compiledTemplate({ code: prompt });
@@ -167,7 +168,7 @@ export class ChatModel implements ICompletionModel {
 
 if (require.main === module) {
   (async () => {
-    const codex = new ChatModel();
+    const codex = new ChatModel('./template/template0.hb');
     const prompt = fs.readFileSync(0, "utf8");
     const responses = await codex.query(prompt, { n: 1 });
     console.log([...responses][0]);

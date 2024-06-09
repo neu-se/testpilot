@@ -143,9 +143,14 @@ if (require.main === module) {
         },
         chatModel: {
           type: "string",
-          default: "llama-3-sonar-small-32k-chat",
-          description: "chat model to use",
+          default: "llama-3-70b-instruct",
+          description: "chatModel LLM api to use",
         },
+        template: {
+          type: "string",
+          default: "./templates/template0.hb",
+          description: "Handlebars template file to use for chat model",
+        }
       });
     const argv = await parser.argv;
 
@@ -157,7 +162,7 @@ if (require.main === module) {
         );
       }
       if (argv.chatModel){
-        model = new ChatModel();
+        model = new ChatModel(argv.template);
       } else {
         model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
       }
