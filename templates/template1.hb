@@ -1,12 +1,8 @@
-Your task is to extend the following code fragment into a complete unit test:
+Your task is to extend the following code fragment
 ```
 {{{code}}}
+``` 
+into a single unit test. Provide your answer as a fenced code block 
 ```
-Please ensure that the test is fully self-contained, DO NOT make any changes to the given code fragment, and DO NOT add any additional comments or explanations.
- 
-Provide your answer as a fenced code block using the following template:
+<unit test>
 ```
-<self-contained unit test>
-```
- 
-Please conclude your response with "DONE."

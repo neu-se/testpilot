@@ -52,6 +52,7 @@ export class ChatModel implements ICompletionModel {
       "Content-Type": "application/json",
       ...JSON.parse(this.authHeaders),
     };
+     
     const options = {
       ...defaultPostOptions,
       // options provided to constructor override default options
@@ -73,9 +74,6 @@ export class ChatModel implements ICompletionModel {
     const compiledTemplate = handlebars.compile(templateFile);
     const newPrompt = compiledTemplate({ code: prompt });
 
-    // console.log(`newPrompt = ${newPrompt}`);
-
-    const newApiEndpoint = 'https://api.perplexity.ai/chat/completions';
     const newOptions = {
       model: "llama-3-70b-instruct",
       max_tokens: 500,
@@ -86,21 +84,14 @@ export class ChatModel implements ICompletionModel {
         },
         {
           role: "user",
-          content: prompt
+          content: newPrompt
         }
       ]
     };
 
-    const newHeaders =  {
-      headers: {
-        accept: "application/json",
-        "content-type": "application/json",
-        ...JSON.parse(this.authHeaders)
-      }
-    };
 
     // const res = await axios.post(this.apiEndpoint, postOptions, { headers });
-    const res = await axios.post(this.apiEndpoint, newOptions, newHeaders );
+    const res = await axios.post(this.apiEndpoint, newOptions, { headers });
 
     const completions = new Set<string>();
     const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
@@ -109,7 +100,6 @@ export class ChatModel implements ICompletionModel {
     const content = res.data.choices[0].message.content;
     while ((match = regExp.exec(content)) !== null) {
       const substitution = match[1];
-      // console.log(`substitution = ${substitution}`);
       completions.add(substitution);
     }
 
