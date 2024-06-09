@@ -162,7 +162,7 @@ if (require.main === module) {
         );
       }
       if (argv.chatModel){
-        model = new ChatModel(argv.template);
+        model = new ChatModel(argv.chatModel, argv.template);
       } else {
         model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
       }

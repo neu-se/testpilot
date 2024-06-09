@@ -28,6 +28,7 @@ export class ChatModel implements ICompletionModel {
   private readonly authHeaders: string;
 
   constructor(
+    private readonly model: string,
     private readonly template: string,
     private readonly instanceOptions: PostOptions = {}
   ) {
@@ -47,7 +48,6 @@ export class ChatModel implements ICompletionModel {
     prompt: string,
     requestPostOptions: PostOptions = {}
   ): Promise<Set<string>> {
-    // console.log(`Codex.query: prompt = ${prompt}, requestPostOptions = ${JSON.stringify(requestPostOptions)}`);
 
     const headers = {
       "Content-Type": "application/json",
@@ -69,7 +69,7 @@ export class ChatModel implements ICompletionModel {
     const compiledTemplate = handlebars.compile(templateFile);
 
     const postOptions = {
-      model: "llama-3-70b-instruct",
+      model: this.model,
       messages: [
         {
           role: "system",
@@ -160,7 +160,7 @@ export class ChatModel implements ICompletionModel {
 
 if (require.main === module) {
   (async () => {
-    const codex = new ChatModel('./template/template0.hb');
+    const codex = new ChatModel('./template/template0.hb', 'llama-3-70b-instruct');
     const prompt = fs.readFileSync(0, "utf8");
     const responses = await codex.query(prompt);
     console.log([...responses][0]);
