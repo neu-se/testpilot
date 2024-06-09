@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { performance } from "perf_hooks";
+import { ChatModel } from "../src/chatmodel";
 import {
   APIFunction,
   Codex,
@@ -138,7 +139,12 @@ if (require.main === module) {
           type: "string",
           choices: ["gpt", "starcoder"],
           default: "gpt",
-          description: "LLM api to use",
+          description: "LLM api to use (this option is ignored if chatModel is specified)",
+        },
+        chatModel: {
+          type: "string",
+          default: "llama-3-sonar-small-32k-chat",
+          description: "chat model to use",
         },
       });
     const argv = await parser.argv;
@@ -150,7 +156,11 @@ if (require.main === module) {
           "Warning: --strictResponses has no effect when not using --responses"
         );
       }
-      model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
+      if (argv.chatModel){
+        model = new ChatModel();
+      } else {
+        model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
+      }
     } else {
       model = MockCompletionModel.fromFile(
         argv.responses,
