@@ -46,7 +46,6 @@ export class ChatModel implements ICompletionModel {
     prompt: string,
     requestPostOptions: PostOptions = {}
   ): Promise<Set<string>> {
-    // console.log(`Codex.query: prompt = ${prompt}, requestPostOptions = ${JSON.stringify(requestPostOptions)}`);
 
     const headers = {
       "Content-Type": "application/json",
@@ -72,8 +71,6 @@ export class ChatModel implements ICompletionModel {
     const templateFile = fs.readFileSync(templateFileName, 'utf8');
     const compiledTemplate = handlebars.compile(templateFile);
     const newPrompt = compiledTemplate({ code: prompt });
-
-    // console.log(`newPrompt = ${newPrompt}`);
 
     const newApiEndpoint = 'https://api.perplexity.ai/chat/completions';
     const newOptions = {
@@ -101,7 +98,7 @@ export class ChatModel implements ICompletionModel {
 
     // const res = await axios.post(this.apiEndpoint, postOptions, { headers });
     const res = await axios.post(this.apiEndpoint, newOptions, newHeaders );
-
+    
     const completions = new Set<string>();
     const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
     let match;

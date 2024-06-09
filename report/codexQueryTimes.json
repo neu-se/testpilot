@@ -1,0 +1,192 @@
+[
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 218
+    },
+    5591.247565
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1706
+    },
+    6532.837465999999
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 3053
+    },
+    6804.805077999999
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1124
+    },
+    5801.689677999999
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 248
+    },
+    7779.653276000001
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 773
+    },
+    3650.5382739999986
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1321
+    },
+    4602.652130999995
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 997
+    },
+    3672.318487000004
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1582
+    },
+    3577.8641149999967
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1775
+    },
+    8423.769022
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 472
+    },
+    4098.857877999995
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1022
+    },
+    4141.967692000006
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 264
+    },
+    4971.280268000002
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1174
+    },
+    6477.41915799999
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 2649
+    },
+    6887.811023999995
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1538
+    },
+    5298.999265999999
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 2511
+    },
+    5484.3176010000025
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 1139
+    },
+    4769.280996999994
+  ],
+  [
+    {
+      "max_tokens": 100,
+      "temperature": 0,
+      "n": 5,
+      "top_p": 1,
+      "promptLength": 628
+    },
+    3791.6251119999943
+  ]
+]
