@@ -1,6 +1,5 @@
 import axios from "axios";
 import fs from "fs";
-import { performance } from "perf_hooks";
 import { ICompletionModel } from "./completionModel";
 import { trimCompletion } from "./syntax";
 import * as handlebars from "handlebars";
@@ -9,7 +8,6 @@ import * as handlebars from "handlebars";
 const defaultPostOptions = {
   max_tokens: 500, // maximum number of tokens to return
   temperature: 0, // sampling temperature; higher values increase diversity
-  // n: 5, // number of completions to return
   top_p: 1, // no need to change this
 };
 export type PostOptions = Partial<typeof defaultPostOptions>;
@@ -62,8 +60,6 @@ export class ChatModel implements ICompletionModel {
       ...requestPostOptions,
     };
 
-    performance.mark("codex-query-start");
-
     const templateFileName = this.template;
     const templateFile = fs.readFileSync(templateFileName, 'utf8');
     const compiledTemplate = handlebars.compile(templateFile);
@@ -86,24 +82,6 @@ export class ChatModel implements ICompletionModel {
 
     const res = await axios.post(this.apiEndpoint, postOptions, { headers });
 
-    const completions = new Set<string>();
-    const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
-    let match;
-
-    const content = res.data.choices[0].message.content;
-    while ((match = regExp.exec(content)) !== null) {
-      const substitution = match[1];
-      completions.add(substitution);
-    }
-
-
-    performance.measure(
-      `codex-query:${JSON.stringify({
-        ...options,
-        promptLength: prompt.length,
-      })}`,
-      "codex-query-start"
-    );
     if (res.status !== 200) {
       throw new Error(
         `Request failed with status ${res.status} and message ${res.statusText}`
@@ -112,27 +90,23 @@ export class ChatModel implements ICompletionModel {
     if (!res.data) {
       throw new Error("Response data is empty");
     }
-    // const json = res.data;
-    // if (json.error) {
-    //   throw new Error(json.error);
-    // }
-    // let numContentFiltered = 0;
-    // const completions = new Set<string>();
-    // if (this.isStarCoder) {
-    //   completions.add(json.generated_text);
-    // } else {
-    //   for (const choice of json.choices || [{ text: "" }]) {
-    //     if (choice.finish_reason === "content_filter") {
-    //       numContentFiltered++;
-    //     }
-    //     completions.add(choice.text);
-    //   }
-    // }
-    // if (numContentFiltered > 0) {
-    //   console.warn(
-    //     `${numContentFiltered} completions were truncated due to content filtering.`
-    //   );
-    // }
+
+    const json = res.data;
+    if (json.error) {
+      throw new Error(json.error);
+    }
+
+    const completions = new Set<string>();
+    const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
+    let match;
+
+    for (const choice of json.choices) {
+      const content = choice.message.content;
+      while ((match = regExp.exec(content)) !== null) {
+        const substitution = match[1];
+        completions.add(substitution);
+      }
+    } 
     return completions;
   }
 
