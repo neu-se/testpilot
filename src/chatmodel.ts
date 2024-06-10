@@ -97,21 +97,16 @@ export class ChatModel implements ICompletionModel {
     }
 
     const completions = new Set<string>();
-    const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
-    let match;
-
     for (const choice of json.choices) {
       const content = choice.message.content;
-      while ((match = regExp.exec(content)) !== null) {
-        const substitution = match[1];
-        completions.add(substitution);
-      }
+      completions.add(content);
     } 
     return completions;
   }
 
   /**
-   * Get completions from Codex and postprocess them as needed; print a warning if it did not produce any
+   * Get completions from the LLM, extract the code fragments enclosed in a fenced code block,
+   * and postprocess them as needed; print a warning if it did not produce any
    *
    * @param prompt the prompt to use
    */
@@ -121,8 +116,13 @@ export class ChatModel implements ICompletionModel {
   ): Promise<Set<string>> {
     try {
       let result = new Set<string>();
-      for (const completion of await this.query(prompt, { temperature })) {
-        result.add(trimCompletion(completion));
+      for (const rawCompletion of await this.query(prompt, { temperature })) {
+        const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
+        let match;
+        while ((match = regExp.exec(rawCompletion)) !== null) {
+          const substitution = match[1];
+          result.add(trimCompletion(substitution));
+        }
       }
       return result;
     } catch (err: any) {
