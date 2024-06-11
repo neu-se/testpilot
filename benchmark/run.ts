@@ -137,19 +137,18 @@ if (require.main === module) {
         },
         model: {
           type: "string",
-          choices: ["gpt", "starcoder"],
-          default: "gpt",
-          description: "LLM api to use (this option is ignored if chatModel is specified)",
+          default: "llama-3-70b-instruct",
+          description: "LLM api to use",
         },
         chatModel: {
-          type: "string",
-          default: "llama-3-70b-instruct",
-          description: "chatModel LLM api to use",
+          type: "boolean",
+          default: true,
+          description: "is the LLM a chat model?",
         },
         template: {
           type: "string",
           default: "./templates/template0.hb",
-          description: "Handlebars template file to use for chat model",
+          description: "Handlebars template file to use (required for chat model)",
         }
       });
     const argv = await parser.argv;
@@ -162,7 +161,7 @@ if (require.main === module) {
         );
       }
       if (argv.chatModel){
-        model = new ChatModel(argv.chatModel, argv.template);
+        model = new ChatModel(argv.model, argv.template);
       } else {
         model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
       }
