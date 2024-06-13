@@ -157,9 +157,6 @@ export class Prompt {
     body: string,
     stubOutHeaders: boolean = true
   ): string | undefined {
- 
-    // console.log(`*** body = ${body}`);
-    // console.log(`*** body.includes("describe(" = ${body.includes("describe(")}`);
 
     let fixed;
     if (!body.includes("describe(")){
@@ -181,21 +178,15 @@ export class Prompt {
       );
     }
 
-    // console.log(`*** fixed = ${fixed}`);
-
     // beautify closing brackets
     const beautified = fixed?.source.replace(/\}\)\}\)$/, "    })\n})");
-
-    // console.log(`***completeTest*** beautified: ${beautified}`);
 
     // if we're using a chat model, we need to include the beautified prompt in the template
     if (this.options.isChatModel) {
       const templateFileName = this.options.templateFileName;
       const template = fs.readFileSync(templateFileName!, "utf8");
       const compiledTemplate = handlebars.compile(template);
-      // console.log(`*** template = ${template}, beautified = ${beautified}`);
       const expandedTemplate = compiledTemplate({ code: beautified });
-      // console.log(`***completeTest*** expandedTemplate: ${expandedTemplate} ***`);
       return expandedTemplate;
     }
 
