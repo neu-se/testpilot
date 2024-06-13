@@ -158,10 +158,16 @@ export class Prompt {
     stubOutHeaders: boolean = true
   ): string | undefined {
 
-    let fixed;
+    let code = "";
+
+    // add imports if first line of body does not contain "require"
+    const line = body.split('\n')[0];
+    if (line.indexOf('require') === -1){
+      code += this.imports + '\n';
+    }  
+
     if (!body.includes("describe(")){
-      fixed = closeBrackets(
-       this.imports +
+      code = code +
          (stubOutHeaders
            ? // stub out suite header and test header so we don't double-count identical tests
              "describe('test suite', function() {\n" +
@@ -169,14 +175,13 @@ export class Prompt {
            : this.suiteHeader + this.testHeader) +
          // add the body, making sure the first line is indented correctly
          body.trim().replace(/^(?=\S)/, " ".repeat(8)) +
-         "\n"
-      );
+         "\n";
     } else { // in case the completion repeats the imports and test/suite headers
-      fixed = closeBrackets(
-        body.replace(/^(?=\S)/, " ".repeat(8)) +
-         "\n"
-      );
+      code += body;
     }
+    
+    // close brackets
+    const fixed = closeBrackets(code);
 
     // beautify closing brackets
     const beautified = fixed?.source.replace(/\}\)\}\)$/, "    })\n})");
