@@ -166,6 +166,7 @@ export class Prompt {
       code += this.imports + '\n';
     }  
 
+    // add headers if they are not already in the body
     if (!body.includes("describe(")){
       code = code +
          (stubOutHeaders
@@ -176,7 +177,7 @@ export class Prompt {
          // add the body, making sure the first line is indented correctly
          body.trim().replace(/^(?=\S)/, " ".repeat(8)) +
          "\n";
-    } else { // in case the completion repeats the imports and test/suite headers
+    } else { // only add the body if it already includes test/suite headers
       code += body;
     }
     
@@ -185,17 +186,15 @@ export class Prompt {
 
     // beautify closing brackets
     const beautified = fixed?.source.replace(/\}\)\}\)$/, "    })\n})");
-
-    // if we're using a chat model, we need to include the beautified prompt in the template
-    if (this.options.isChatModel) {
-      const templateFileName = this.options.templateFileName;
-      const template = fs.readFileSync(templateFileName!, "utf8");
-      const compiledTemplate = handlebars.compile(template);
-      const expandedTemplate = compiledTemplate({ code: beautified });
-      return expandedTemplate;
-    }
-
     return beautified;
+  }
+
+  public embedInTemplate(body: string): string {
+    const templateFileName = this.options.templateFileName;
+    const template = fs.readFileSync(templateFileName!, "utf8");
+    const compiledTemplate = handlebars.compile(template);
+    const expandedTemplate = compiledTemplate({ code: body });
+    return expandedTemplate;
   }
 
   public withProvenance(...provenanceInfos: PromptProvenance[]): Prompt {

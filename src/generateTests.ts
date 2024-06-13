@@ -108,15 +108,15 @@ export class TestGenerator {
     temperature: number
   ) {
     let testSource = prompt.completeTest(completion);
-    if (this.isChatModel){ // for chat models, we need to extract the test from a fenced code block
-      const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
-      let match;
-      while ((match = regExp.exec(testSource!)) !== null) {
-          const substitution = match[1];
-          testSource = substitution;
-          break;
-      }
-    }
+    // if (this.isChatModel){ // for chat models, we need to extract the test from a fenced code block
+    //   const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
+    //   let match;
+    //   while ((match = regExp.exec(testSource!)) !== null) {
+    //       const substitution = match[1];
+    //       testSource = substitution;
+    //       break;
+    //   }
+    // }
 
     const testInfo = this.collector.recordTestInfo(
       testSource ?? completion,

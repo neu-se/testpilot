@@ -54,8 +54,6 @@ export class MochaValidator extends TestValidator {
 
   public validateTest(testName: string, testSource: string): TestOutcome {
 
-    // console.log(`*** testSource = ${testSource}`);
-
     const requirePattern = new RegExp(
       `require\\('${this.packageName}'\\)`,
       "g"
