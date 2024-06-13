@@ -63,10 +63,22 @@ export class TestGenerator {
         }
         generatedPrompts.set(assembledPrompt, prompt);
 
-        const completions = await this.model.completions(
+        const rawCompletions = await this.model.completions(
           prompt.assemble(),
           temperature
         );
+        let completions = new Set<string>;  
+        if (this.isChatModel){ // for chat models, we need to extract the tests from fenced code blocks
+          const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
+          for (const rawCompletion of rawCompletions) {
+            let match;
+            while ((match = regExp.exec(rawCompletion!)) !== null) {
+                const substitution = match[1];
+                completions.add(substitution);
+                break;
+            }
+          }
+        }
         for (const completion of completions) {
           // console.log(`** completion = ${completion}`);
           const testInfo = this.validateCompletion(

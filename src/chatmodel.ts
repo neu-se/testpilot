@@ -2,8 +2,6 @@ import axios from "axios";
 import fs from "fs";
 import { ICompletionModel } from "./completionModel";
 import { trimCompletion } from "./syntax";
-// import * as handlebars from "handlebars";
-
 
 const defaultPostOptions = {
   max_tokens: 500, // maximum number of tokens to return
@@ -36,7 +34,7 @@ export class ChatModel implements ICompletionModel {
   }
 
   /**
-   * Query Codex for completions with a given prompt.
+   * Query the ChatModel for completions with a given prompt.
    *
    * @param prompt The prompt to use for the completion.
    * @param requestPostOptions The options to use for the request.
@@ -60,10 +58,6 @@ export class ChatModel implements ICompletionModel {
       ...requestPostOptions,
     };
 
-    // const templateFileName = this.template;
-    // const templateFile = fs.readFileSync(templateFileName, 'utf8');
-    // const compiledTemplate = handlebars.compile(templateFile);
-
     const postOptions = {
       model: this.model,
       messages: [
@@ -73,12 +67,11 @@ export class ChatModel implements ICompletionModel {
         },
         {
           role: "user",
-          content: prompt //compiledTemplate({ code: prompt })
+          content: prompt
         }
       ],
       ...options
     };
-
 
     const res = await axios.post(this.apiEndpoint, postOptions, { headers });
 
@@ -117,12 +110,7 @@ export class ChatModel implements ICompletionModel {
     try {
       let result = new Set<string>();
       for (const rawCompletion of await this.query(prompt, { temperature })) {
-        const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
-        let match;
-        while ((match = regExp.exec(rawCompletion)) !== null) {
-          const substitution = match[1];
-          result.add(trimCompletion(substitution));
-        }
+        result.add(trimCompletion(rawCompletion));
       }
       return result;
     } catch (err: any) {
