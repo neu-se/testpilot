@@ -30,6 +30,8 @@ export class TestGenerator {
     private temperatures: number[],
     private snippetMap: SnippetMap,
     private model: ICompletionModel,
+    private isChatModel: boolean,
+    private templateFileName: string,
     private validator: TestValidator,
     private collector: ITestResultCollector
   ) {}
@@ -42,7 +44,12 @@ export class TestGenerator {
       let generatedPassingTests = false;
       const generatedPrompts = new Map<string, Prompt>();
       const snippets = this.snippetMap(fun.functionName) ?? [];
-      const worklist = [new Prompt(fun, snippets, defaultPromptOptions())];
+      const promptOptions = {
+        ...defaultPromptOptions(),
+        isChatModel: this.isChatModel,
+        templateFileName: this.templateFileName,
+      };
+      const worklist = [new Prompt(fun, snippets, promptOptions)];
       while (worklist.length > 0) {
         const prompt = worklist.pop()!;
 
@@ -61,6 +68,7 @@ export class TestGenerator {
           temperature
         );
         for (const completion of completions) {
+          // console.log(`** completion = ${completion}`);
           const testInfo = this.validateCompletion(
             prompt,
             completion,
@@ -87,7 +95,16 @@ export class TestGenerator {
     completion: string,
     temperature: number
   ) {
-    const testSource = prompt.completeTest(completion);
+    let testSource = prompt.completeTest(completion);
+    if (this.isChatModel){ // for chat models, we need to extract the test from a fenced code block
+      const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
+      let match;
+      while ((match = regExp.exec(testSource!)) !== null) {
+          const substitution = match[1];
+          testSource = substitution;
+          break;
+      }
+    }
 
     const testInfo = this.collector.recordTestInfo(
       testSource ?? completion,

@@ -36,6 +36,8 @@ export async function runExperiment(
   temperatures: number[],
   snippetMap: Map<string, string[]>,
   model: ICompletionModel,
+  isChatModel: boolean,
+  templateFileName: string,
   validator: TestValidator,
   collector: TestResultCollector,
   timeLimit: number
@@ -45,6 +47,8 @@ export async function runExperiment(
     temperatures,
     (fn) => snippetMap.get(fn),
     model,
+    isChatModel,
+    templateFileName,
     validator,
     collector
   );
@@ -140,7 +144,7 @@ if (require.main === module) {
           default: "llama-3-70b-instruct",
           description: "LLM api to use",
         },
-        chatModel: {
+        isChatModel: {
           type: "boolean",
           default: true,
           description: "is the LLM a chat model?",
@@ -160,7 +164,7 @@ if (require.main === module) {
           "Warning: --strictResponses has no effect when not using --responses"
         );
       }
-      if (argv.chatModel){
+      if (argv.isChatModel){
         model = new ChatModel(argv.model, argv.template);
       } else {
         model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
@@ -283,6 +287,8 @@ if (require.main === module) {
         argv.temperatures.split(/\s+/).map(parseFloat),
         allSnippets,
         model,
+        argv.isChatModel,
+        argv.template,
         validator,
         collector,
         argv.timeLimit * 1000

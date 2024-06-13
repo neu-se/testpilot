@@ -2,6 +2,8 @@ import dedent from "dedent";
 import { APIFunction, sanitizePackageName } from "./exploreAPI";
 import { TestOutcome, TestStatus } from "./report";
 import { closeBrackets, commentOut, trimAndCombineDocComment } from "./syntax";
+import handlebars from "handlebars";
+import fs from "fs";
 
 /**
  * A strategy object for refining a prompt based on the outcome of a test
@@ -28,6 +30,10 @@ type PromptOptions = {
   includeDocComment: boolean;
   /** Whether to include the function's body in the prompt. */
   includeFunctionBody: boolean;
+  /** Whether the model used is a chat model */
+  isChatModel?: boolean;
+  /** Template file used to generate prompts for chat model */
+  templateFileName?: string;
 };
 
 export function defaultPromptOptions(): PromptOptions {
@@ -151,20 +157,49 @@ export class Prompt {
     body: string,
     stubOutHeaders: boolean = true
   ): string | undefined {
-    let fixed = closeBrackets(
-      this.imports +
-        // (stubOutHeaders
-        //   ? // stub out suite header and test header so we don't double-count identical tests
-        //     "describe('test suite', function() {\n" +
-        //     "    it('test case', function(done) {\n"
-        //   : this.suiteHeader + this.testHeader) +
-        // add the body, making sure the first line is indented correctly
-        (body.includes("describe(") && body.includes("it(") ? "" : this.suiteHeader + this.testHeader) +
+ 
+    // console.log(`*** body = ${body}`);
+    // console.log(`*** body.includes("describe(" = ${body.includes("describe(")}`);
+
+    let fixed;
+    if (!body.includes("describe(")){
+      fixed = closeBrackets(
+       this.imports +
+         (stubOutHeaders
+           ? // stub out suite header and test header so we don't double-count identical tests
+             "describe('test suite', function() {\n" +
+             "    it('test case', function(done) {\n"
+           : this.suiteHeader + this.testHeader) +
+         // add the body, making sure the first line is indented correctly
+         body.trim().replace(/^(?=\S)/, " ".repeat(8)) +
+         "\n"
+      );
+    } else { // in case the completion repeats the imports and test/suite headers
+      fixed = closeBrackets(
         body.replace(/^(?=\S)/, " ".repeat(8)) +
-        "\n"
-    );
+         "\n"
+      );
+    }
+
+    // console.log(`*** fixed = ${fixed}`);
+
     // beautify closing brackets
-    return fixed?.source.replace(/\}\)\}\)$/, "    })\n})");
+    const beautified = fixed?.source.replace(/\}\)\}\)$/, "    })\n})");
+
+    // console.log(`***completeTest*** beautified: ${beautified}`);
+
+    // if we're using a chat model, we need to include the beautified prompt in the template
+    if (this.options.isChatModel) {
+      const templateFileName = this.options.templateFileName;
+      const template = fs.readFileSync(templateFileName!, "utf8");
+      const compiledTemplate = handlebars.compile(template);
+      // console.log(`*** template = ${template}, beautified = ${beautified}`);
+      const expandedTemplate = compiledTemplate({ code: beautified });
+      // console.log(`***completeTest*** expandedTemplate: ${expandedTemplate} ***`);
+      return expandedTemplate;
+    }
+
+    return beautified;
   }
 
   public withProvenance(...provenanceInfos: PromptProvenance[]): Prompt {

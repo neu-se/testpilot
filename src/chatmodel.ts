@@ -2,7 +2,7 @@ import axios from "axios";
 import fs from "fs";
 import { ICompletionModel } from "./completionModel";
 import { trimCompletion } from "./syntax";
-import * as handlebars from "handlebars";
+// import * as handlebars from "handlebars";
 
 
 const defaultPostOptions = {
@@ -60,9 +60,9 @@ export class ChatModel implements ICompletionModel {
       ...requestPostOptions,
     };
 
-    const templateFileName = this.template;
-    const templateFile = fs.readFileSync(templateFileName, 'utf8');
-    const compiledTemplate = handlebars.compile(templateFile);
+    // const templateFileName = this.template;
+    // const templateFile = fs.readFileSync(templateFileName, 'utf8');
+    // const compiledTemplate = handlebars.compile(templateFile);
 
     const postOptions = {
       model: this.model,
@@ -73,7 +73,7 @@ export class ChatModel implements ICompletionModel {
         },
         {
           role: "user",
-          content: compiledTemplate({ code: prompt })
+          content: prompt //compiledTemplate({ code: prompt })
         }
       ],
       ...options
