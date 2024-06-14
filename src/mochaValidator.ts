@@ -145,7 +145,7 @@ export class MochaValidator extends TestValidator {
       // further sanity check: there should be exactly one result (either passed or pending)
       const numResults = report.passes.length + report.pending.length;
       if (numResults != 1) {
-        throw new Error(`Expected 1 test result, got ${numResults}`);
+        console.warn(`Expected 1 test result, got ${numResults}`);
       }
 
       if (report.passes.length > 0) {

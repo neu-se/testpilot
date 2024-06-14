@@ -136,12 +136,8 @@ export class Prompt {
    * representation.
    */
   public assemble(): string {
-    return this.embedInTemplate(this.signature, this.functionBody,this.assembleUsageSnippets(),
+    return this.embedInTemplate(this.signature, this.docComment + this.functionBody,this.assembleUsageSnippets(),
       this.imports +
-      this.assembleUsageSnippets() +
-      this.docComment +
-      this.signature +
-      this.functionBody +
       this.suiteHeader +
       this.testHeader
     );
@@ -191,11 +187,15 @@ export class Prompt {
     const templateFileName = this.options.templateFileName;
     const template = fs.readFileSync(templateFileName!, "utf8");
     const compiledTemplate = handlebars.compile(template);
-    const expandedTemplate = compiledTemplate({ 
-      signature: signature, 
-      functionBody: functionBody ? "this function is defined as follows:\n" + functionBody : "",
-      snippets: snippets ? "you may use the following examples to guide your implementation:\n" + snippets : "",
+    let expandedTemplate = compiledTemplate({ 
+      signature: signature.trim(), 
+      functionBody: functionBody ? "This function is defined as follows:\n" + functionBody.trim() : "",
+      snippets: snippets ? "You may use the following examples to guide your implementation:\n" + snippets : "",
       code: body });
+    while (expandedTemplate.includes('\n\n\n')){
+      expandedTemplate = expandedTemplate.replace('\n\n\n','\n\n');
+    }
+    // .replace('\n\n\n','\n\n')
     return expandedTemplate;
   }
 
