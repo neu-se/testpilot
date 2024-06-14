@@ -13,6 +13,7 @@ import { ITestInfo, TestOutcome, TestStatus } from "./report";
 import { SnippetMap } from "./snippetHelper";
 import { ITestResultCollector } from "./testResultCollector";
 import { TestValidator } from "./testValidator";
+import * as fs from "fs";
 
 /**
  * Context class collecting various bits of information needed for test
@@ -64,37 +65,28 @@ export class TestGenerator {
         generatedPrompts.set(assembledPrompt, prompt);
 
         const rawCompletions = await this.model.completions(
-          prompt.assemble(),
+          assembledPrompt,
           temperature
         );
         let completions = new Set<string>;  
-        if (this.isChatModel){ // for chat models, we need to extract the tests from fenced code blocks
-          const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
-          for (const rawCompletion of rawCompletions) {
-            let match;
-            while ((match = regExp.exec(rawCompletion!)) !== null) {
-                const substitution = match[1];
-                completions.add(substitution);
-                break;
+        
+        for (const rawCompletion of rawCompletions) {
+          const match = extractTestFromRawCompletion(rawCompletion);
+          if (match !== "") {
+            const testInfo = this.validateCompletion(
+              prompt,
+              match,
+              temperature
+            );
+            if (testInfo.outcome.status === TestStatus.PASSED) {
+              generatedPassingTests = true;
             }
+            this.refinePrompts(prompt, match, testInfo, worklist);
+            this.collector.recordPromptInfo(prompt, temperature, completions);
+            if (generatedPassingTests) break;
           }
         }
-        for (const completion of completions) {
-          // console.log(`** completion = ${completion}`);
-          const testInfo = this.validateCompletion(
-            prompt,
-            completion,
-            temperature
-          );
-          if (testInfo.outcome.status === TestStatus.PASSED) {
-            generatedPassingTests = true;
-          }
-
-          this.refinePrompts(prompt, completion, testInfo, worklist);
-        }
-        this.collector.recordPromptInfo(prompt, temperature, completions);
       }
-      if (generatedPassingTests) break;
     }
   }
 
@@ -108,16 +100,6 @@ export class TestGenerator {
     temperature: number
   ) {
     let testSource = prompt.completeTest(completion);
-    // if (this.isChatModel){ // for chat models, we need to extract the test from a fenced code block
-    //   const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
-    //   let match;
-    //   while ((match = regExp.exec(testSource!)) !== null) {
-    //       const substitution = match[1];
-    //       testSource = substitution;
-    //       break;
-    //   }
-    // }
-
     const testInfo = this.collector.recordTestInfo(
       testSource ?? completion,
       prompt,
@@ -168,4 +150,13 @@ export class TestGenerator {
       }
     }
   }
+}
+
+function extractTestFromRawCompletion(rawCompletion: string): string {
+  const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
+  let match;
+  while ((match = regExp.exec(rawCompletion)) !== null) {
+    return match[1];
+  }
+  return "";
 }

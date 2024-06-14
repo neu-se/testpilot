@@ -94,6 +94,10 @@ export class ChatModel implements ICompletionModel {
       const content = choice.message.content;
       completions.add(content);
     } 
+    // console.log('------------------------------');
+    // console.log(`PROMPT: ${prompt}`);
+    // console.log(`COMPLETION: ${[...completions][0]}`);
+    // console.log('------------------------------');
     return completions;
   }
 
@@ -110,7 +114,7 @@ export class ChatModel implements ICompletionModel {
     try {
       let result = new Set<string>();
       for (const rawCompletion of await this.query(prompt, { temperature })) {
-        result.add(trimCompletion(rawCompletion));
+        result.add(rawCompletion);
       }
       return result;
     } catch (err: any) {

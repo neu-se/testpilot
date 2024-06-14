@@ -138,7 +138,7 @@ export class Prompt {
    * representation.
    */
   public assemble(): string {
-    return (
+    return this.embedInTemplate(
       this.imports +
       this.assembleUsageSnippets() +
       this.docComment +
@@ -276,7 +276,7 @@ export class DocCommentIncluder implements IPromptRefiner {
 
 export class RetryPrompt extends Prompt {
   constructor(
-    prev: Prompt,
+    private prev: Prompt,
     private body: string,
     private readonly err: string
   ) {
@@ -284,25 +284,12 @@ export class RetryPrompt extends Prompt {
   }
 
   public assemble() {
-    const rawFailingTest = super.assemble() + this.body + "\n";
-    const completedFailingTest = closeBrackets(rawFailingTest);
-    let failingTest;
-    if (completedFailingTest) {
-      failingTest = completedFailingTest.source.replace(
-        /\}\)\}\)$/,
-        "    })\n"
-      );
-    } else {
-      failingTest = rawFailingTest + "    })\n";
-    }
-
-    return (
-      failingTest +
-      "    // the test above fails with the following error:\n" +
-      `    //   ${this.err}\n` +
-      "    // fixed test:\n" +
-      this.testHeader
-    );
+    const rawFailingTest = this.prev.completeTest(this.body);
+    const templateFileName = './templates/retry-template.hb';
+    const template = fs.readFileSync(templateFileName!, "utf8");
+    const compiledTemplate = handlebars.compile(template);
+    const expandedTemplate = compiledTemplate({ test: rawFailingTest, error: this.err });
+    return expandedTemplate;
   }
 }
 
