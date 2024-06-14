@@ -30,8 +30,6 @@ type PromptOptions = {
   includeDocComment: boolean;
   /** Whether to include the function's body in the prompt. */
   includeFunctionBody: boolean;
-  /** Whether the model used is a chat model */
-  isChatModel?: boolean;
   /** Template file used to generate prompts for chat model */
   templateFileName?: string;
 };

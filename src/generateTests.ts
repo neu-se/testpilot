@@ -31,7 +31,6 @@ export class TestGenerator {
     private temperatures: number[],
     private snippetMap: SnippetMap,
     private model: ICompletionModel,
-    private isChatModel: boolean,
     private templateFileName: string,
     private validator: TestValidator,
     private collector: ITestResultCollector
@@ -47,7 +46,6 @@ export class TestGenerator {
       const snippets = this.snippetMap(fun.functionName) ?? [];
       const promptOptions = {
         ...defaultPromptOptions(),
-        isChatModel: this.isChatModel,
         templateFileName: this.templateFileName,
       };
       const worklist = [new Prompt(fun, snippets, promptOptions)];

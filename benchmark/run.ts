@@ -1,10 +1,8 @@
 import fs from "fs";
 import path from "path";
 import { performance } from "perf_hooks";
-import { ChatModel } from "../src/chatmodel";
 import {
   APIFunction,
-  Codex,
   exploreAPI,
   FunctionDescriptor,
   getDocSnippets,
@@ -15,6 +13,7 @@ import {
   TestGenerator,
   TestValidator,
 } from "..";
+import { ChatModel } from "../src/chatmodel";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { PerformanceMeasurer } from "./performanceMeasurer";
@@ -36,7 +35,6 @@ export async function runExperiment(
   temperatures: number[],
   snippetMap: Map<string, string[]>,
   model: ICompletionModel,
-  isChatModel: boolean,
   templateFileName: string,
   validator: TestValidator,
   collector: TestResultCollector,
@@ -47,7 +45,6 @@ export async function runExperiment(
     temperatures,
     (fn) => snippetMap.get(fn),
     model,
-    isChatModel,
     templateFileName,
     validator,
     collector
@@ -141,18 +138,15 @@ if (require.main === module) {
         },
         model: {
           type: "string",
+          demandOption: true,
           default: "llama-3-70b-instruct",
           description: "LLM api to use",
         },
-        isChatModel: {
-          type: "boolean",
-          default: true,
-          description: "is the LLM a chat model?",
-        },
         template: {
           type: "string",
-          default: "./templates/template0.hb",
-          description: "Handlebars template file to use (required for chat model)",
+          demandOption: true,
+          default: "./templates/template2.hb",
+          description: "Handlebars template file to use",
         }
       });
     const argv = await parser.argv;
@@ -164,11 +158,7 @@ if (require.main === module) {
           "Warning: --strictResponses has no effect when not using --responses"
         );
       }
-      if (argv.isChatModel){
-        model = new ChatModel(argv.model, argv.template);
-      } else {
-        model = new Codex(argv.model === "starcoder", { n: argv.numCompletions });
-      }
+      model = new ChatModel(argv.model, argv.template);
     } else {
       model = MockCompletionModel.fromFile(
         argv.responses,
@@ -287,7 +277,6 @@ if (require.main === module) {
         argv.temperatures.split(/\s+/).map(parseFloat),
         allSnippets,
         model,
-        argv.isChatModel,
         argv.template,
         validator,
         collector,
