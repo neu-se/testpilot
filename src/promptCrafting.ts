@@ -136,7 +136,7 @@ export class Prompt {
    * representation.
    */
   public assemble(): string {
-    return this.embedInTemplate(
+    return this.embedInTemplate(this.signature, this.functionBody,this.assembleUsageSnippets(),
       this.imports +
       this.assembleUsageSnippets() +
       this.docComment +
@@ -187,11 +187,15 @@ export class Prompt {
     return beautified;
   }
 
-  public embedInTemplate(body: string): string {
+  public embedInTemplate(signature: string, functionBody: string, snippets: string, body: string): string {
     const templateFileName = this.options.templateFileName;
     const template = fs.readFileSync(templateFileName!, "utf8");
     const compiledTemplate = handlebars.compile(template);
-    const expandedTemplate = compiledTemplate({ code: body });
+    const expandedTemplate = compiledTemplate({ 
+      signature: signature, 
+      functionBody: functionBody ? "this function is defined as follows:\n" + functionBody : "",
+      snippets: snippets ? "you may use the following examples to guide your implementation:\n" + snippets : "",
+      code: body });
     return expandedTemplate;
   }
 
