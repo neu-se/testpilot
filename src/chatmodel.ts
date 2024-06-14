@@ -1,7 +1,6 @@
 import axios from "axios";
-import fs from "fs";
+import { performance } from "perf_hooks";
 import { ICompletionModel } from "./completionModel";
-import { trimCompletion } from "./syntax";
 
 const defaultPostOptions = {
   max_tokens: 500, // maximum number of tokens to return
@@ -19,6 +18,9 @@ function getEnv(name: string): string {
   return value;
 }
 
+/**
+ * A model that uses the ChatModel API to provide completions.
+ */
 export class ChatModel implements ICompletionModel {
   private readonly apiEndpoint: string;
   private readonly authHeaders: string;
@@ -58,6 +60,8 @@ export class ChatModel implements ICompletionModel {
       ...requestPostOptions,
     };
 
+    performance.mark("llm-query-start");
+    
     const postOptions = {
       model: this.model,
       messages: [
@@ -75,6 +79,13 @@ export class ChatModel implements ICompletionModel {
 
     const res = await axios.post(this.apiEndpoint, postOptions, { headers });
 
+    performance.measure(
+      `llm-query:${JSON.stringify({
+        ...options,
+        promptLength: prompt.length,
+      })}`,
+      "llm-query-start"
+    );
     if (res.status !== 200) {
       throw new Error(
         `Request failed with status ${res.status} and message ${res.statusText}`
@@ -94,10 +105,6 @@ export class ChatModel implements ICompletionModel {
       const content = choice.message.content;
       completions.add(content);
     } 
-    // console.log('------------------------------');
-    // console.log(`PROMPT: ${prompt}`);
-    // console.log(`COMPLETION: ${[...completions][0]}`);
-    // console.log('------------------------------');
     return completions;
   }
 
@@ -113,8 +120,8 @@ export class ChatModel implements ICompletionModel {
   ): Promise<Set<string>> {
     try {
       let result = new Set<string>();
-      for (const rawCompletion of await this.query(prompt, { temperature })) {
-        result.add(rawCompletion);
+      for (const completion of await this.query(prompt, { temperature })) {
+        result.add(completion);
       }
       return result;
     } catch (err: any) {
@@ -122,16 +129,4 @@ export class ChatModel implements ICompletionModel {
       return new Set<string>();
     }
   }
-}
-
-if (require.main === module) {
-  (async () => {
-    const codex = new ChatModel('./template/template0.hb', 'llama-3-70b-instruct');
-    const prompt = fs.readFileSync(0, "utf8");
-    const responses = await codex.query(prompt);
-    console.log([...responses][0]);
-  })().catch((err) => {
-    console.error(err);
-    process.exit(1);
-  });
 }
