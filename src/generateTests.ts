@@ -69,19 +69,22 @@ export class TestGenerator {
         let completions = new Set<string>;  
         
         for (const rawCompletion of rawCompletions) {
-          const match = extractTestFromRawCompletion(rawCompletion);
-          if (match !== "") {
-            const testInfo = this.validateCompletion(
-              prompt,
-              match,
-              temperature
-            );
-            if (testInfo.outcome.status === TestStatus.PASSED) {
-              generatedPassingTests = true;
-            }
-            this.refinePrompts(prompt, match, testInfo, worklist);
-            this.collector.recordPromptInfo(prompt, temperature, completions);
-            if (generatedPassingTests) break;
+          const tests = extractTestFromRawCompletion(rawCompletion);
+          if (tests.size > 0) {
+            for (const test of tests) {
+               
+              const testInfo = this.validateCompletion(
+                prompt,
+                test,
+                temperature
+              );
+              if (testInfo.outcome.status === TestStatus.PASSED) {
+                generatedPassingTests = true;
+              }
+              this.refinePrompts(prompt, test, testInfo, worklist);
+              this.collector.recordPromptInfo(prompt, temperature, completions);
+              // if (generatedPassingTests) break;
+          }
           }
         }
       }
@@ -150,11 +153,35 @@ export class TestGenerator {
   }
 }
 
-function extractTestFromRawCompletion(rawCompletion: string): string {
+function extractTestFromRawCompletion(rawCompletion: string): Set<string> {
   const regExp = /```[^\n\r]*\n((?:.(?!```))*)\n```/gs;
   let match;
   while ((match = regExp.exec(rawCompletion)) !== null) {
-    return match[1];
+    const code = match[1];
+    const set = new Set<string>();
+    if (code.split('it(').length === 2) {
+      set.add(code);
+      return set;
+    } else { // we received a suite with more than one test, turn this into multiple suites each containing one test
+      // console.log(`splitting suite with multiple tests: ${code}`);
+      const indexOfSuite = code.indexOf('describe(');
+      const indexOfFirstTest = code.indexOf('it(');
+      let testIndex = indexOfFirstTest;
+      while (code.indexOf('it(', testIndex + 1) !== -1) { // while there is another test
+        const nextTestIndex = code.indexOf('it(', testIndex + 1);
+        const test = code.substring(testIndex, nextTestIndex);
+        set.add(test);
+        testIndex = nextTestIndex;
+      }
+      // add the last test
+      const lastTest = code.substring(testIndex);
+      set.add(lastTest);
+      const preSuite = code.substring(0, indexOfSuite);
+      const suiteHeader = code.substring(indexOfSuite, indexOfFirstTest);
+      const result = new Set([...set].map((test) => { return preSuite + suiteHeader + test; }));
+      // console.log(`split suite into ${[...result]}`);
+      return result;
+    }
   }
-  return "";
+  return new Set();
 }
