@@ -196,7 +196,6 @@ export class Prompt {
     while (expandedTemplate.includes('\n\n\n')){
       expandedTemplate = expandedTemplate.replace('\n\n\n','\n\n');
     }
-    // .replace('\n\n\n','\n\n')
     return expandedTemplate;
   }
 

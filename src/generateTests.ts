@@ -69,12 +69,10 @@ export class TestGenerator {
           temperature
         );
         let completions = new Set<string>;  
-        
         for (const rawCompletion of rawCompletions) {
           const tests = extractTestFromRawCompletion(rawCompletion);
           if (tests.size > 0) {
             for (const test of tests) {
-               
               const testInfo = this.validateCompletion(
                 prompt,
                 test,
@@ -85,8 +83,8 @@ export class TestGenerator {
               }
               this.refinePrompts(prompt, test, testInfo, worklist);
               this.collector.recordPromptInfo(prompt, temperature, completions);
-              // if (generatedPassingTests) break;
-          }
+              if (generatedPassingTests) break;
+            }
           }
         }
       }
