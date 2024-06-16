@@ -96,10 +96,10 @@ export class Prompt {
             let assert = require('assert');
             let ${sanitizedPackageName} = require('${fun.packageName}');\n`;
 
-    this.signature = commentOut(fun.signature);
+    this.signature = fun.signature;
 
     if (options.includeFunctionBody) {
-      this.functionBody = commentOut(fun.descriptor.implementation);
+      this.functionBody = fun.descriptor.implementation;
     } else {
       this.functionBody = "";
     }
@@ -126,8 +126,7 @@ export class Prompt {
       return this.usageSnippets
         .map((snippet, index) => {
           const lines = snippet.split("\n");
-          const commentedLines = lines.map((line) => `// ${line}\n`);
-          return `// usage #${index + 1}\n` + commentedLines.join("");
+          return `// usage #${index + 1}\n` + lines.join("");
         })
         .join("");
     }
@@ -138,7 +137,7 @@ export class Prompt {
    * representation.
    */
   public assemble(): string {
-    return this.embedInTemplate(this.signature, this.docComment + this.functionBody,this.assembleUsageSnippets(),
+    return this.embedInTemplate(this.signature, this.docComment + this.functionBody, this.assembleUsageSnippets(),
       this.imports +
       this.suiteHeader +
       this.testHeader
@@ -191,8 +190,8 @@ export class Prompt {
     const compiledTemplate = handlebars.compile(template);
     let expandedTemplate = compiledTemplate({ 
       signature: signature.trim(), 
-      functionBody: functionBody ? "This function is defined as follows:\n" + functionBody.trim() : "",
-      snippets: snippets ? "You may use the following examples to guide your implementation:\n" + snippets : "",
+      functionBody: functionBody ? `This function is defined as follows:\n\`\`\`\n${functionBody.trim()}\n\`\`\`` : "",
+      snippets: snippets ? `You may use the following examples to guide your implementation:\n\`\`\`\n${snippets}\n\`\`\`` : "",
       code: body });
     while (expandedTemplate.includes('\n\n\n')){
       expandedTemplate = expandedTemplate.replace('\n\n\n','\n\n');
