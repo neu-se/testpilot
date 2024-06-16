@@ -36,6 +36,7 @@ export async function runExperiment(
   snippetMap: Map<string, string[]>,
   model: ICompletionModel,
   templateFileName: string,
+  retryTemplateFileName: string,
   validator: TestValidator,
   collector: TestResultCollector,
   timeLimit: number
@@ -46,6 +47,7 @@ export async function runExperiment(
     (fn) => snippetMap.get(fn),
     model,
     templateFileName,
+    retryTemplateFileName,
     validator,
     collector
   );
@@ -145,7 +147,13 @@ if (require.main === module) {
         template: {
           type: "string",
           demandOption: true,
-          default: "./templates/template2.hb",
+          default: "./templates/template.hb",
+          description: "Handlebars template file to use",
+        },
+        retryTemplate: {
+          type: "string",
+          demandOption: true,
+          default: "./templates/retry-template.hb",
           description: "Handlebars template file to use",
         }
       });
@@ -158,7 +166,7 @@ if (require.main === module) {
           "Warning: --strictResponses has no effect when not using --responses"
         );
       }
-      model = new ChatModel(argv.model, argv.template);
+      model = new ChatModel(argv.model);
     } else {
       model = MockCompletionModel.fromFile(
         argv.responses,
@@ -278,6 +286,7 @@ if (require.main === module) {
         allSnippets,
         model,
         argv.template,
+        argv.retryTemplate,
         validator,
         collector,
         argv.timeLimit * 1000

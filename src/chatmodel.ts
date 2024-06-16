@@ -26,8 +26,7 @@ export class ChatModel implements ICompletionModel {
   private readonly authHeaders: string;
 
   constructor(
-    private readonly model: string,
-    private readonly template: string,
+    private readonly model: string, 
     private readonly instanceOptions: PostOptions = {}
   ) {
     this.apiEndpoint = getEnv("TESTPILOT_LLM_API_ENDPOINT");

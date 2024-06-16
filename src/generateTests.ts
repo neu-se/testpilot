@@ -32,6 +32,7 @@ export class TestGenerator {
     private snippetMap: SnippetMap,
     private model: ICompletionModel,
     private templateFileName: string,
+    private retryTemplateFileName: string,
     private validator: TestValidator,
     private collector: ITestResultCollector
   ) {}
@@ -47,6 +48,7 @@ export class TestGenerator {
       const promptOptions = {
         ...defaultPromptOptions(),
         templateFileName: this.templateFileName,
+        retryTemplateFileName: this.retryTemplateFileName,
       };
       const worklist = [new Prompt(fun, snippets, promptOptions)];
       while (worklist.length > 0) {

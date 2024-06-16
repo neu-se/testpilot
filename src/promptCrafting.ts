@@ -32,6 +32,8 @@ type PromptOptions = {
   includeFunctionBody: boolean;
   /** Template file used to generate prompts for chat model */
   templateFileName?: string;
+  /** Template file used to generate prompts when errors occur */
+  retryTemplateFileName?: string;
 };
 
 export function defaultPromptOptions(): PromptOptions {
@@ -287,7 +289,7 @@ export class RetryPrompt extends Prompt {
 
   public assemble() {
     const rawFailingTest = this.prev.completeTest(this.body);
-    const templateFileName = './templates/retry-template.hb';
+    const templateFileName = this.options.retryTemplateFileName;
     const template = fs.readFileSync(templateFileName!, "utf8");
     const compiledTemplate = handlebars.compile(template);
     const expandedTemplate = compiledTemplate({ test: rawFailingTest, error: this.err });
