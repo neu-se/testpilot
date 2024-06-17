@@ -131,24 +131,30 @@ describe("retry-with-error refiner", () => {
   it("refining a prompt after a failed test should include the error message", () => {
     const fun = APIFunction.fromSignature("plus(x, y)");
     fun.descriptor.docComment = "Concatenates two strings.";
-    const prompt = new Prompt(fun, [], {
-      ...defaultPromptOptions(),
+
+    const promptOptions =
+    {
+      ...defaultPromptOptions(), 
       includeDocComment: true,
-    });
+      templateFileName: "./templates/template.hb",
+      retryTemplateFileName: "./templates/retry-template.hb"
+    };
+
+    const prompt = new Prompt(fun, [], promptOptions);
 
     // first, a failed test
-    const completion = " ".repeat(8) + "assert(plus(1, 1), 3);";
-    expect(prompt.completeTest(completion)).to.equal(dedent`
-            let mocha = require('mocha');
-            let assert = require('assert');
-            let plus = require('plus');
-            describe('test suite', function() {
-                it('test case', function(done) {
-                    assert(plus(1, 1), 3);
-                })
-            })
-        `);
+    const completion = dedent`
+    let mocha = require('mocha');
+    let assert = require('assert');
+    let plus = require('plus');
+    describe('test suite', function() {
+        it('test case', function(done) {
+            assert(plus(1, 1), 3);
+        })
+    })`;
 
+    expect(prompt.completeTest(completion)).to.equal(completion);
+    
     // then, a retry
     const errmsg = "expected 2 to equal 3";
     const refined = retryWithErrorRefiner.refine(
@@ -157,24 +163,34 @@ describe("retry-with-error refiner", () => {
       TestOutcome.FAILED({ message: errmsg })
     );
     const refinedPrompt = new RetryPrompt(prompt, completion, errmsg);
+
     expect(refined).to.deep.equal([refinedPrompt]);
-    expect(refinedPrompt.assemble()).to.equal(
-      dedent`
-            let mocha = require('mocha');
-            let assert = require('assert');
-            let plus = require('plus');
-            // Concatenates two strings.
-            // plus(x, y)
-            describe('test plus', function() {
-                it('test plus', function(done) {
-                    assert(plus(1, 1), 3);
-                })
-                // the test above fails with the following error:
-                //   expected 2 to equal 3
-                // fixed test:
-                it('test plus', function(done) {
-        ` + "\n"
-    );
+
+    const actualRefinedPrompt = refinedPrompt.assemble();
+    const expectedRefinedPrompt = dedent`
+The test:
+\`\`\`
+  let mocha = require('mocha');
+  let assert = require('assert');
+  let plus = require('plus');
+  describe('test suite', function() {
+      it('test case', function(done) {
+          assert(plus(1, 1), 3);
+      })
+  })
+\`\`\` 
+failed with the following error message:
+\`\`\`
+  expected 2 to equal 3  
+\`\`\`
+Your task is to modify the above code to fix the test. 
+
+Provide your answer as a fenced code block:  
+\`\`\`
+<unit test>
+\`\`\`\n`;
+   
+    expect(actualRefinedPrompt).to.equal(expectedRefinedPrompt);
   });
 });
 
