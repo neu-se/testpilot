@@ -192,17 +192,34 @@ describe("function-body inclusion", () => {
     );
 
     // initial prompt
-    const prompt = new Prompt(fun, [], defaultPromptOptions());
-    expect(prompt.assemble()).to.equal(
-      dedent`
-            let mocha = require('mocha');
-            let assert = require('assert');
-            let plus = require('plus');
-            // plus(x, y)
-            describe('test plus', function() {
-                it('test plus', function(done) {
-        ` + "\n"
-    );
+    const promptOptions = 
+      {
+        ...defaultPromptOptions(),
+        templateFileName: "./templates/template.hb"
+      };
+    const prompt = new Prompt(fun, [], promptOptions);
+    const actualPrompt = prompt.assemble();
+    const expectedPrompt = dedent`
+    Your task is to write a test for the following function
+    \`\`\`
+    plus(x, y)
+    \`\`\`
+
+    Please proceed by modifying the following code fragment
+    \`\`\`
+    let mocha = require('mocha');
+    let assert = require('assert');
+    let plus = require('plus');
+    describe('test plus', function() {
+        it('test plus', function(done) {
+
+    \`\`\` 
+    so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
+    external resources. For example, a test should not attempt to access files that it does not create itself.
+
+    Provide your answer as a fenced code block.`;
+    
+    expect(actualPrompt).to.equal(expectedPrompt);  
 
     // refined prompt
     const refined = functionBodyIncluder.refine(
@@ -212,19 +229,36 @@ describe("function-body inclusion", () => {
     );
     expect(refined).to.have.lengthOf(1);
     const refinedPrompt = refined[0];
-    expect(refinedPrompt.assemble()).to.equal(
-      dedent`
-            let mocha = require('mocha');
-            let assert = require('assert');
-            let plus = require('plus');
-            // plus(x, y)
-            // function plus(x, y) {
-            //     return String(x) + String(y);
-            // }
-            describe('test plus', function() {
-                it('test plus', function(done) {
-        ` + "\n"
-    );
+
+    const actualRefinedPrompt = refinedPrompt.assemble();
+    const expectedRefinedPrompt = dedent`
+    Your task is to write a test for the following function
+    \`\`\`
+    plus(x, y)
+    \`\`\`
+
+    This function is defined as follows:
+    \`\`\`
+    function plus(x, y) {
+        return String(x) + String(y);
+    }
+    \`\`\`
+
+    Please proceed by modifying the following code fragment
+    \`\`\`
+    let mocha = require('mocha');
+    let assert = require('assert');
+    let plus = require('plus');
+    describe('test plus', function() {
+        it('test plus', function(done) {
+
+    \`\`\` 
+    so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
+    external resources. For example, a test should not attempt to access files that it does not create itself.
+
+    Provide your answer as a fenced code block.`;
+    
+    expect(actualRefinedPrompt).to.equal(expectedRefinedPrompt);
   });
 
   it("refining a prompt where no function body is available should do nothing", () => {
