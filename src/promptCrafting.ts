@@ -126,7 +126,7 @@ export class Prompt {
       return this.usageSnippets
         .map((snippet, index) => {
           const lines = snippet.split("\n");
-          return `// usage #${index + 1}\n` + lines.join("");
+          return `// usage #${index + 1}\n` + lines.join("") + "\n";
         })
         .join("");
     }
