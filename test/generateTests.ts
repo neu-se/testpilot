@@ -353,10 +353,14 @@ describe("Test validation", () => {
     const validator = new MockValidator();
     const collector = new BaseTestResultCollector();
     const snippetMap = new Map<string, string[]>();
+    const templateFileName = "templates/template.hb";
+    const retryTemplateFileName = "templates/retry-template.hb";
     const testGenerator = new TestGenerator(
       [0.0],
       Map.prototype.get.bind(snippetMap),
       model,
+      templateFileName,
+      retryTemplateFileName,
       validator,
       collector
     );
