@@ -82,11 +82,11 @@ export class TestGenerator {
                 generatedPassingTests = true;
               }
               this.refinePrompts(prompt, test, testInfo, worklist);
-              this.collector.recordPromptInfo(prompt, temperature, completions);
               if (generatedPassingTests) break;
             }
           }
         }
+        this.collector.recordPromptInfo(prompt, temperature, completions);
       }
     }
   }
@@ -163,7 +163,6 @@ function extractTestFromRawCompletion(rawCompletion: string): Set<string> {
       set.add(code);
       return set;
     } else { // we received a suite with more than one test, turn this into multiple suites each containing one test
-      // console.log(`splitting suite with multiple tests: ${code}`);
       const indexOfSuite = code.indexOf('describe(');
       const indexOfFirstTest = code.indexOf('it(');
       let testIndex = indexOfFirstTest;
@@ -179,9 +178,12 @@ function extractTestFromRawCompletion(rawCompletion: string): Set<string> {
       const preSuite = code.substring(0, indexOfSuite);
       const suiteHeader = code.substring(indexOfSuite, indexOfFirstTest);
       const result = new Set([...set].map((test) => { return preSuite + suiteHeader + test; }));
-      // console.log(`split suite into ${[...result]}`);
       return result;
     }
   }
-  return new Set();
+  // if we're unable to extract something, return a set containing the raw completion
+  // even though it's unlikely to validate
+  const set = new Set<string>();
+  set.add(rawCompletion);
+  return set;
 }
