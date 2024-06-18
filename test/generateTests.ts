@@ -254,14 +254,19 @@ describe("TestGenerator", () => {
     const snippet = "stringUtils.titleCase('hello world')";
     const cmp =
       "    assert(stringUtils.titleCase('hello world') === 'Hello World');";
-    const initialPrompt = new Prompt(fun, [snippet], defaultPromptOptions());
+    const promptOptions = {
+      ...defaultPromptOptions(),
+      templateFileName: "templates/template.hb",
+      retryTemplateFileName: "templates/retry-template.hb"
+    };
+    const initialPrompt = new Prompt(fun, [snippet], promptOptions);
     const provenance = {
       originalPrompt: initialPrompt,
       testId: 0,
       refiner: "SnippetIncluder",
     };
     const refinedPrompt = new Prompt(fun, [snippet], {
-      ...defaultPromptOptions(),
+      ...promptOptions,
       includeSnippets: true,
     }).withProvenance(provenance);
     await runSimpleTest(
