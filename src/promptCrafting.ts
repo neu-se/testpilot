@@ -137,11 +137,41 @@ export class Prompt {
    * representation.
    */
   public assemble(): string {
-    return this.embedInTemplate(this.signature, this.docComment + this.functionBody, this.assembleUsageSnippets(),
-      this.imports +
-      this.suiteHeader +
-      this.testHeader
-    );
+    // return this.embedInTemplate(this.signature, this.functionBody, this.docComment, this.assembleUsageSnippets(),
+    const signature = this.signature;
+    const functionBody = this.functionBody;
+    const docComments = this.docComment;
+    const snippets = this.assembleUsageSnippets();
+    const headers = this.imports + this.suiteHeader + this.testHeader;
+ 
+    const templateFileName = this.options.templateFileName;
+    const template = fs.readFileSync(templateFileName!, "utf8");
+    const compiledTemplate = handlebars.compile(template);
+    let expandedTemplate = compiledTemplate({ 
+      signature: signature.trim(), 
+      docComments: docComments ? docComments : "",
+      functionBody: functionBody ? `This function is defined as follows:\n\`\`\`\n${functionBody.trim()}\n\`\`\`` : "",
+      snippets: snippets ? `You may use the following examples to guide your implementation:\n\`\`\`\n${snippets}\n\`\`\`` : "",
+      code: headers });
+    while (expandedTemplate.includes('\n\n\n')){ // avoid unnecessary blank lines
+      expandedTemplate = expandedTemplate.replace('\n\n\n','\n\n');
+    }
+    while (expandedTemplate.includes('\`\`\`\n\n')){ // avoid empty lines at the beginning of fenced code blocks
+      expandedTemplate = expandedTemplate.replace('\`\`\`\n\n','\`\`\`\n');
+    }
+    while (expandedTemplate.includes('\n\n\`\`\`')){ // avoid empty lines at the end of fenced code blocks
+      expandedTemplate = expandedTemplate.replace('\n\n\`\`\`','\n\`\`\`');
+    }
+    if (expandedTemplate.includes('Please')){
+      expandedTemplate = expandedTemplate.replace('Please', '\nPlease'); // start new paragraph for the instructions
+    }
+    if (expandedTemplate.includes('This function')){
+      expandedTemplate = expandedTemplate.replace('This function', '\nThis function'); // start new paragraph for the function body
+    }
+    if (expandedTemplate.includes('You may use')){
+      expandedTemplate = expandedTemplate.replace('You may use', '\nYou may use'); // start new paragraph for the examples
+    }
+    return expandedTemplate;
   }
 
   /**
@@ -184,20 +214,30 @@ export class Prompt {
     return beautified;
   }
 
-  public embedInTemplate(signature: string, functionBody: string, snippets: string, body: string): string {
-    const templateFileName = this.options.templateFileName;
-    const template = fs.readFileSync(templateFileName!, "utf8");
-    const compiledTemplate = handlebars.compile(template);
-    let expandedTemplate = compiledTemplate({ 
-      signature: signature.trim(), 
-      functionBody: functionBody ? `This function is defined as follows:\n\`\`\`\n${functionBody.trim()}\n\`\`\`` : "",
-      snippets: snippets ? `You may use the following examples to guide your implementation:\n\`\`\`\n${snippets}\n\`\`\`` : "",
-      code: body });
-    while (expandedTemplate.includes('\n\n\n')){
-      expandedTemplate = expandedTemplate.replace('\n\n\n','\n\n');
-    }
-    return expandedTemplate;
-  }
+  // public embedInTemplate(signature: string, functionBody: string, docComments: string, snippets: string, body: string): string {
+  //   const templateFileName = this.options.templateFileName;
+  //   const template = fs.readFileSync(templateFileName!, "utf8");
+  //   const compiledTemplate = handlebars.compile(template);
+  //   let expandedTemplate = compiledTemplate({ 
+  //     signature: signature.trim(), 
+  //     docComments: docComments ? docComments : "",
+  //     functionBody: functionBody ? `This function is defined as follows:\n\`\`\`\n${functionBody.trim()}\n\`\`\`` : "",
+  //     snippets: snippets ? `You may use the following examples to guide your implementation:\n\`\`\`\n${snippets}\n\`\`\`` : "",
+  //     code: body });
+  //   while (expandedTemplate.includes('\n\n\n')){ // avoid unnecessary blank lines
+  //     expandedTemplate = expandedTemplate.replace('\n\n\n','\n\n');
+  //   }
+  //   while (expandedTemplate.includes('\`\`\`\n\n')){ // avoid empty lines at the beginning of fenced code blocks
+  //     expandedTemplate = expandedTemplate.replace('\`\`\`\n\n','\`\`\`\n');
+  //   }
+  //   while (expandedTemplate.includes('\n\n\`\`\`')){ // avoid empty lines at the end of fenced code blocks
+  //     expandedTemplate = expandedTemplate.replace('\n\n\`\`\`','\n\`\`\`');
+  //   }
+  //   if (expandedTemplate.includes('Please')){
+  //     expandedTemplate = expandedTemplate.replace('Please', '\nPlease'); // start new paragraph for the instructions
+  //   }
+  //   return expandedTemplate;
+  // }
 
   public withProvenance(...provenanceInfos: PromptProvenance[]): Prompt {
     this.provenance.push(...provenanceInfos);

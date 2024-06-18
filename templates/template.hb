@@ -1,5 +1,6 @@
-Your task is to write a test for the following function
+Your task is to write a test for the following function:
 ```
+{{{docComments}}}
 {{{signature}}}
 ```
 
@@ -7,7 +8,7 @@ Your task is to write a test for the following function
 
 {{{snippets}}}
 
-Please proceed by modifying the following code fragment
+Please proceed by modifying the following code fragment:
 ```
 {{{code}}}
 ``` 

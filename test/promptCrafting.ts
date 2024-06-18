@@ -183,13 +183,14 @@ failed with the following error message:
 \`\`\`
   expected 2 to equal 3  
 \`\`\`
+
 Your task is to modify the above code to fix the test. 
 
 Provide your answer as a fenced code block:  
 \`\`\`
 <unit test>
 \`\`\`\n`;
-   
+         
     expect(actualRefinedPrompt).to.equal(expectedRefinedPrompt);
   });
 });
@@ -216,19 +217,18 @@ describe("function-body inclusion", () => {
     const prompt = new Prompt(fun, [], promptOptions);
     const actualPrompt = prompt.assemble();
     const expectedPrompt = dedent`
-    Your task is to write a test for the following function
+    Your task is to write a test for the following function:
     \`\`\`
     plus(x, y)
     \`\`\`
 
-    Please proceed by modifying the following code fragment
+    Please proceed by modifying the following code fragment:
     \`\`\`
     let mocha = require('mocha');
     let assert = require('assert');
     let plus = require('plus');
     describe('test plus', function() {
         it('test plus', function(done) {
-
     \`\`\` 
     so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
     external resources. For example, a test should not attempt to access files that it does not create itself.
@@ -248,11 +248,11 @@ describe("function-body inclusion", () => {
 
     const actualRefinedPrompt = refinedPrompt.assemble();
     const expectedRefinedPrompt = dedent`
-    Your task is to write a test for the following function
+    Your task is to write a test for the following function:
     \`\`\`
     plus(x, y)
     \`\`\`
-
+    
     This function is defined as follows:
     \`\`\`
     function plus(x, y) {
@@ -260,14 +260,13 @@ describe("function-body inclusion", () => {
     }
     \`\`\`
 
-    Please proceed by modifying the following code fragment
+    Please proceed by modifying the following code fragment:
     \`\`\`
     let mocha = require('mocha');
     let assert = require('assert');
     let plus = require('plus');
     describe('test plus', function() {
         it('test plus', function(done) {
-
     \`\`\` 
     so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
     external resources. For example, a test should not attempt to access files that it does not create itself.
@@ -303,19 +302,18 @@ describe("test prompt assembly", () => {
     const prompt = new Prompt(fun, [], promptOptions);
 
     const expectedPrompt = dedent`
-            Your task is to write a test for the following function
+            Your task is to write a test for the following function:
             \`\`\`
             zip-a-folder.ZipAFolder.tar(srcFolder, tarFilePath, zipAFolderOptions) async
             \`\`\`
 
-            Please proceed by modifying the following code fragment
+            Please proceed by modifying the following code fragment:
             \`\`\`
             let mocha = require('mocha');
             let assert = require('assert');
             let zip_a_folder = require('zip-a-folder');
             describe('test zip_a_folder', function() {
                 it('test zip-a-folder.ZipAFolder.tar', function(done) {
-
             \`\`\` 
             so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
             external resources. For example, a test should not attempt to access files that it does not create itself.
@@ -338,30 +336,26 @@ describe("test prompt assembly", () => {
     const prompt = new Prompt(fun, [], promptOptions);
 
     const expectedPrompt = dedent`
-            Your task is to write a test for the following function
-            \`\`\`
-            zip-a-folder.ZipAFolder.tar(srcFolder, tarFilePath, zipAFolderOptions) async
-            \`\`\`
+      Your task is to write a test for the following function:
+      \`\`\`
+      // zips folder
+      // @param {string}
 
-            This function is defined as follows:
-            \`\`\`
-            // zips folder
-            // @param {string}
-            \`\`\`
+      zip-a-folder.ZipAFolder.tar(srcFolder, tarFilePath, zipAFolderOptions) async
+      \`\`\`
 
-            Please proceed by modifying the following code fragment
-            \`\`\`
-            let mocha = require('mocha');
-            let assert = require('assert');
-            let zip_a_folder = require('zip-a-folder');
-            describe('test zip_a_folder', function() {
-                it('test zip-a-folder.ZipAFolder.tar', function(done) {
+      Please proceed by modifying the following code fragment:
+      \`\`\`
+      let mocha = require('mocha');
+      let assert = require('assert');
+      let zip_a_folder = require('zip-a-folder');
+      describe('test zip_a_folder', function() {
+          it('test zip-a-folder.ZipAFolder.tar', function(done) {
+      \`\`\` 
+      so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
+      external resources. For example, a test should not attempt to access files that it does not create itself.
 
-            \`\`\` 
-            so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
-            external resources. For example, a test should not attempt to access files that it does not create itself.
-
-            Provide your answer as a fenced code block.`;
+      Provide your answer as a fenced code block.`;        
     expect(prompt.assemble()).to.equal(expectedPrompt);
   });
 
@@ -389,33 +383,31 @@ describe("test prompt assembly", () => {
     );
 
     const expectedPrompt = dedent`
-            Your task is to write a test for the following function
-            \`\`\`
-            plural.addRule(match, result)
-            \`\`\`
+      Your task is to write a test for the following function:
+      \`\`\`
+      plural.addRule(match, result)
+      \`\`\`
 
-            You may use the following examples to guide your implementation:
-            \`\`\`
-            // usage #1
-            plural.addRule("goose", "geese");
-            // usage #2
-            function neuterPlural(word) {  return word.replace(/um$/, 'a');}plural.addRule('bacterium', neuterPlural);plural.addRule('memorandum', neuterPlural);
+      You may use the following examples to guide your implementation:
+      \`\`\`
+      // usage #1
+      plural.addRule("goose", "geese");
+      // usage #2
+      function neuterPlural(word) {  return word.replace(/um$/, 'a');}plural.addRule('bacterium', neuterPlural);plural.addRule('memorandum', neuterPlural);
+      \`\`\`
 
-            \`\`\`
+      Please proceed by modifying the following code fragment:
+      \`\`\`
+      let mocha = require('mocha');
+      let assert = require('assert');
+      let plural = require('plural');
+      describe('test plural', function() {
+          it('test plural.addRule', function(done) {
+      \`\`\` 
+      so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
+      external resources. For example, a test should not attempt to access files that it does not create itself.
 
-            Please proceed by modifying the following code fragment
-            \`\`\`
-            let mocha = require('mocha');
-            let assert = require('assert');
-            let plural = require('plural');
-            describe('test plural', function() {
-                it('test plural.addRule', function(done) {
-
-            \`\`\` 
-            so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
-            external resources. For example, a test should not attempt to access files that it does not create itself.
-
-            Provide your answer as a fenced code block.`;    
+      Provide your answer as a fenced code block.`;              
     expect(prompt.assemble()).to.equal(expectedPrompt);
   });
 
@@ -445,15 +437,12 @@ describe("test prompt assembly", () => {
     );
 
     const expectedPrompt = dedent`
-          Your task is to write a test for the following function
-          \`\`\`
-          plural.addRule(match, result)
-          \`\`\`
-
-          This function is defined as follows:
+          Your task is to write a test for the following function:
           \`\`\`
           // adds rule
           // @param {string}
+
+          plural.addRule(match, result)
           \`\`\`
 
           You may use the following examples to guide your implementation:
@@ -462,17 +451,15 @@ describe("test prompt assembly", () => {
           plural.addRule("goose", "geese");
           // usage #2
           function neuterPlural(word) {  return word.replace(/um$/, 'a');}plural.addRule('bacterium', neuterPlural);plural.addRule('memorandum', neuterPlural);
-
           \`\`\`
 
-          Please proceed by modifying the following code fragment
+          Please proceed by modifying the following code fragment:
           \`\`\`
           let mocha = require('mocha');
           let assert = require('assert');
           let plural = require('plural');
           describe('test plural', function() {
               it('test plural.addRule', function(done) {
-
           \`\`\` 
           so that it becomes a test suite containing a few self-contained unit tests.  The tests should not rely on any 
           external resources. For example, a test should not attempt to access files that it does not create itself.
