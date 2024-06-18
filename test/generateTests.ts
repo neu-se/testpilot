@@ -273,7 +273,13 @@ describe("TestGenerator", () => {
       "    assert(stringUtils.titleCase('hello world') === 'Hello World');";
     const cmp2 =
       "    assert(stringUtils.titleCase('Hello world') === 'Hello World');";
-    const initialPrompt = new Prompt(fun, [snippet], defaultPromptOptions());
+    const promptOptions =
+      {
+        ...defaultPromptOptions(),
+        templateFileName: "templates/template.hb",
+        retryTemplateFileName: "templates/retry-template.hb"
+      };
+    const initialPrompt = new Prompt(fun, [snippet], promptOptions);
     const provenance1 = {
       originalPrompt: initialPrompt,
       testId: 1,
@@ -286,7 +292,7 @@ describe("TestGenerator", () => {
     };
     // we get the same refined prompt for both completions
     const refinedPrompt = new Prompt(fun, [snippet], {
-      ...defaultPromptOptions(),
+      ...promptOptions,
       includeSnippets: true,
     }).withProvenance(provenance1, provenance2);
     await runSimpleTest(
