@@ -138,12 +138,17 @@ describe("TestGenerator", () => {
     const fun = APIFunction.fromSignature("string-utils.titleCase(string)");
     const cmp =
       "    assert(stringUtils.titleCase('hello world') === 'Hello World');";
+    const promptOptions = {
+      ...defaultPromptOptions(),
+      templateFileName: "templates/template.hb",
+      retryTemplateFileName: "templates/retry-template.hb"
+    };
     await runSimpleTest(
       fun,
       [],
       [
         {
-          prompt: new Prompt(fun, [], defaultPromptOptions()),
+          prompt: new Prompt(fun, [], promptOptions),
           tests: [{ completion: cmp, passes: true }],
         },
       ]
@@ -156,7 +161,12 @@ describe("TestGenerator", () => {
       "    assert(stringUtils.titleCase('hello world') === 'Hello World');";
     const cmp2 =
       "    assert(stringUtils.titleCase('Hello World') === 'Hello world');";
-    const initialPrompt = new Prompt(fun, [], defaultPromptOptions());
+    const promptOptions = {
+      ...defaultPromptOptions(),
+      templateFileName: "templates/template.hb",
+      retryTemplateFileName: "templates/retry-template.hb"
+    };
+    const initialPrompt = new Prompt(fun, [], promptOptions);
     const provenance = {
       originalPrompt: initialPrompt,
       testId: 1,
@@ -194,14 +204,19 @@ describe("TestGenerator", () => {
       "    assert(stringUtils.titleCase('hello world').result === 'Hello World');";
     const cmp2 =
       "    assert(stringUtils.titleCase('hello world') === 'Hello World');";
-    const initialPrompt = new Prompt(fun, [snippet], defaultPromptOptions());
+    const promptOptions = {
+      ...defaultPromptOptions(),
+      templateFileName: "templates/template.hb",
+      retryTemplateFileName: "templates/retry-template.hb"
+    };
+    const initialPrompt = new Prompt(fun, [snippet], promptOptions);
     const provenance = {
       originalPrompt: initialPrompt,
       testId: 0,
       refiner: "SnippetIncluder",
     };
     const refinedPrompt = new Prompt(fun, [snippet], {
-      ...defaultPromptOptions(),
+      ...promptOptions,
       includeSnippets: true,
     }).withProvenance(provenance);
     const provenance2 = {
