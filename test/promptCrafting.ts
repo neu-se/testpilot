@@ -186,10 +186,7 @@ failed with the following error message:
 
 Your task is to modify the above code to fix the test. 
 
-Provide your answer as a fenced code block:  
-\`\`\`
-<unit test>
-\`\`\`\n`;
+Provide your answer as a fenced code block.`;
          
     expect(actualRefinedPrompt).to.equal(expectedRefinedPrompt);
   });
